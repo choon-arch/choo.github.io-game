@@ -133,7 +133,7 @@
         }
 
         .tools-sidebar {
-            width: 80px; /* 稍微加寬以容納兩列顏色 */
+            width: 110px; /* 加寬以容納更大的按鈕 */
             background: white;
             border-radius: 15px;
             padding: 10px;
@@ -220,18 +220,47 @@
         }
         .action-btn:active { transform: scale(0.95); background: #ddd; }
         
+        /* 改進的提交按鈕 */
         #submit-btn {
             background-color: #27AE60;
             color: white;
-            height: 60px;
-            width: 60px;
+            height: 80px; /* 增加高度 */
+            width: 80px; /* 增加寬度 */
             border-radius: 50%;
-            box-shadow: 0 4px 0 #1e8449;
-            font-size: 1.8rem;
+            box-shadow: 0 6px 0 #1e8449; /* 增加陰影深度 */
+            font-size: 2.2rem; /* 增加圖標大小 */
+            position: relative;
+            z-index: 5;
+            transition: all 0.2s;
+        }
+        #submit-btn:hover {
+            background-color: #2ECC71;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #1e8449;
         }
         #submit-btn:active { 
-            box-shadow: 0 0 0 #1e8449; 
+            box-shadow: 0 2px 0 #1e8449; 
             transform: translateY(4px); 
+        }
+
+        /* 新增的按鈕提示 */
+        .submit-tooltip {
+            position: absolute;
+            bottom: -35px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 20;
+        }
+        
+        #submit-btn:hover .submit-tooltip {
+            opacity: 1;
         }
 
         .flying-img {
@@ -269,7 +298,7 @@
             }
 
             .tools-sidebar {
-                width: 60px;
+                width: 80px; /* 在移動設備上稍微加寬 */
                 padding: 8px 5px;
             }
 
@@ -284,10 +313,47 @@
                 font-size: 1.2rem;
             }
             
+            /* 移動設備上的提交按鈕 */
             #submit-btn {
-                width: 45px;
-                height: 45px;
-                font-size: 1.4rem;
+                width: 65px; /* 在移動設備上更大 */
+                height: 65px;
+                font-size: 1.8rem;
+            }
+            
+            .submit-tooltip {
+                font-size: 0.7rem;
+                bottom: -30px;
+            }
+        }
+
+        /* 額外的輔助功能改進 */
+        @media (max-width: 480px) {
+            .tools-sidebar {
+                flex-direction: row;
+                width: 100%;
+                height: auto;
+                padding: 10px;
+            }
+            
+            .color-picker {
+                grid-template-columns: repeat(5, 1fr); /* 在小屏幕上顯示5列顏色 */
+                gap: 5px;
+            }
+            
+            .brush-size-picker {
+                flex-direction: row;
+                border: none;
+                padding: 0;
+            }
+            
+            .action-group {
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            #submit-btn {
+                width: 60px;
+                height: 60px;
             }
         }
     </style>
@@ -338,7 +404,10 @@
 
                 <div class="action-group">
                     <button class="action-btn" onclick="clearCanvas()" title="清除">🗑️</button>
-                    <button id="submit-btn" class="action-btn" onclick="submitArtwork()" title="完成上傳">🚀</button>
+                    <button id="submit-btn" class="action-btn" onclick="submitArtwork()" title="完成上傳">
+                        🚀
+                        <span class="submit-tooltip">上傳到藝術牆</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -391,7 +460,7 @@
         }
 
         function startDraw(e) {
-            if (e.type === 'touchstart') e.preventDefault();
+            if (e.type === 'Touchstart') e.preventDefault();
             isDrawing = true;
             ctx.beginPath();
             const pos = getPos(e);
@@ -401,7 +470,7 @@
 
         function draw(e) {
             if (!isDrawing) return;
-            if (e.type === 'touchmove') e.preventDefault();
+            if (e.type === 'Touchmove') e.preventDefault();
             
             const pos = getPos(e);
             ctx.lineTo(pos.x, pos.y);
@@ -418,9 +487,9 @@
         canvas.addEventListener('mouseup', endDraw);
         canvas.addEventListener('mouseleave', endDraw);
 
-        canvas.addEventListener('touchstart', startDraw, {passive: false});
-        canvas.addEventListener('touchmove', draw, {passive: false});
-        canvas.addEventListener('touchend', endDraw);
+        canvas.addEventListener('Touchstart', startDraw, {passive: false});
+        canvas.addEventListener('Touchmove', draw, {passive: false});
+        canvas.addEventListener('Touchend', endDraw);
 
         function setColor(color, btn) {
             currentColor = color;
@@ -502,4 +571,3 @@
     </script>
 </body>
 </html>
-
