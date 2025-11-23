@@ -8,7 +8,7 @@
         :root {
             --mcd-red: #DA291C;
             --mcd-yellow: #FFC72C;
-            --kiosk-height-desktop: 480px; /* 稍微增加高度以容納更多工具 */
+            --kiosk-height-desktop: 480px;
         }
 
         body {
@@ -44,7 +44,7 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            opacity: 0.5; /* 修改這裡：透明度 50% */
+            opacity: 0.5;
             z-index: -1;
         }
 
@@ -98,6 +98,7 @@
             justify-content: space-between;
             align-items: center;
             font-size: 0.9rem;
+            position: relative;
         }
 
         .kiosk-body {
@@ -133,7 +134,7 @@
         }
 
         .tools-sidebar {
-            width: 110px; /* 加寬以容納更大的按鈕 */
+            width: 80px;
             background: white;
             border-radius: 15px;
             padding: 10px;
@@ -147,7 +148,7 @@
 
         .color-picker {
             display: grid;
-            grid-template-columns: 1fr 1fr; /* 兩列顯示顏色 */
+            grid-template-columns: 1fr 1fr;
             gap: 8px;
             align-items: center;
         }
@@ -220,47 +221,39 @@
         }
         .action-btn:active { transform: scale(0.95); background: #ddd; }
         
-        /* 改進的提交按鈕 */
-        #submit-btn {
-            background-color: #27AE60;
-            color: white;
-            height: 80px; /* 增加高度 */
-            width: 80px; /* 增加寬度 */
-            border-radius: 50%;
-            box-shadow: 0 6px 0 #1e8449; /* 增加陰影深度 */
-            font-size: 2.2rem; /* 增加圖標大小 */
-            position: relative;
-            z-index: 5;
-            transition: all 0.2s;
-        }
-        #submit-btn:hover {
-            background-color: #2ECC71;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 0 #1e8449;
-        }
-        #submit-btn:active { 
-            box-shadow: 0 2px 0 #1e8449; 
-            transform: translateY(4px); 
-        }
-
-        /* 新增的按鈕提示 */
-        .submit-tooltip {
-            position: absolute;
-            bottom: -35px;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 20;
+        /* 清除按鈕樣式 */
+        #clear-btn {
+            background-color: #f0f0f0;
+            color: #333;
         }
         
-        #submit-btn:hover .submit-tooltip {
-            opacity: 1;
+        /* 新的提交按鈕位置 - 在標題欄 */
+        .header-submit-btn {
+            background-color: #27AE60;
+            color: white;
+            height: 45px;
+            width: 45px;
+            border-radius: 50%;
+            box-shadow: 0 4px 0 #1e8449;
+            font-size: 1.4rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .header-submit-btn:hover {
+            background-color: #2ECC71;
+            transform: translateY(-50%) scale(1.05);
+        }
+        .header-submit-btn:active { 
+            box-shadow: 0 1px 0 #1e8449; 
+            transform: translateY(calc(-50% + 3px)); 
         }
 
         .flying-img {
@@ -298,7 +291,7 @@
             }
 
             .tools-sidebar {
-                width: 80px; /* 在移動設備上稍微加寬 */
+                width: 60px;
                 padding: 8px 5px;
             }
 
@@ -314,46 +307,11 @@
             }
             
             /* 移動設備上的提交按鈕 */
-            #submit-btn {
-                width: 65px; /* 在移動設備上更大 */
-                height: 65px;
-                font-size: 1.8rem;
-            }
-            
-            .submit-tooltip {
-                font-size: 0.7rem;
-                bottom: -30px;
-            }
-        }
-
-        /* 額外的輔助功能改進 */
-        @media (max-width: 480px) {
-            .tools-sidebar {
-                flex-direction: row;
-                width: 100%;
-                height: auto;
-                padding: 10px;
-            }
-            
-            .color-picker {
-                grid-template-columns: repeat(5, 1fr); /* 在小屏幕上顯示5列顏色 */
-                gap: 5px;
-            }
-            
-            .brush-size-picker {
-                flex-direction: row;
-                border: none;
-                padding: 0;
-            }
-            
-            .action-group {
-                flex-direction: row;
-                justify-content: center;
-            }
-            
-            #submit-btn {
-                width: 60px;
-                height: 60px;
+            .header-submit-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+                right: 10px;
             }
         }
     </style>
@@ -368,6 +326,7 @@
         <div class="kiosk-header">
             <strong>🎨 小小畫家</strong>
             <span>#01</span>
+            <button class="header-submit-btn" onclick="submitArtwork()" title="完成上傳">🚀</button>
         </div>
         <div class="kiosk-body">
             <div class="canvas-wrapper" id="canvas-container">
@@ -403,11 +362,7 @@
                 </div>
 
                 <div class="action-group">
-                    <button class="action-btn" onclick="clearCanvas()" title="清除">🗑️</button>
-                    <button id="submit-btn" class="action-btn" onclick="submitArtwork()" title="完成上傳">
-                        🚀
-                        <span class="submit-tooltip">上傳到藝術牆</span>
-                    </button>
+                    <button id="clear-btn" class="action-btn" onclick="clearCanvas()" title="清除">🗑️</button>
                 </div>
             </div>
         </div>
@@ -460,7 +415,7 @@
         }
 
         function startDraw(e) {
-            if (e.type === 'Touchstart') e.preventDefault();
+            if (e.type === 'touchstart') e.preventDefault();
             isDrawing = true;
             ctx.beginPath();
             const pos = getPos(e);
@@ -470,7 +425,7 @@
 
         function draw(e) {
             if (!isDrawing) return;
-            if (e.type === 'Touchmove') e.preventDefault();
+            if (e.type === 'touchmove') e.preventDefault();
             
             const pos = getPos(e);
             ctx.lineTo(pos.x, pos.y);
@@ -487,9 +442,9 @@
         canvas.addEventListener('mouseup', endDraw);
         canvas.addEventListener('mouseleave', endDraw);
 
-        canvas.addEventListener('Touchstart', startDraw, {passive: false});
-        canvas.addEventListener('Touchmove', draw, {passive: false});
-        canvas.addEventListener('Touchend', endDraw);
+        canvas.addEventListener('touchstart', startDraw, {passive: false});
+        canvas.addEventListener('touchmove', draw, {passive: false});
+        canvas.addEventListener('touchend', endDraw);
 
         function setColor(color, btn) {
             currentColor = color;
@@ -516,7 +471,10 @@
             const blank = document.createElement('canvas');
             blank.width = canvas.width;
             blank.height = canvas.height;
-            if (canvas.toDataURL() === blank.toDataURL()) return; 
+            if (canvas.toDataURL() === blank.toDataURL()) {
+                alert("請先畫一些東西再提交！");
+                return;
+            } 
 
             const dataURL = canvas.toDataURL();
             
