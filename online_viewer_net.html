@@ -1,193 +1,20 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>銀杏士多 - 像素冒險版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Viewer</title>
     <style>
-        body { margin: 0; overflow: hidden; background: #fdf5e6; font-family: Arial, sans-serif; touch-action: none; }
-        #game-container { position: relative; width: 100vw; height: 100vh; }
-        canvas { display: block; touch-action: none; }
-        #ui { position: absolute; top: 20px; width: 100%; text-align: center; font-size: 18px; color: #8b4513; font-weight: bold; pointer-events: none; }
-        #joystick-base { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 80px; height: 80px; background: rgba(139, 69, 19, 0.1); border-radius: 50%; border: 2px solid #e2c08d; }
-        #joystick-stick { position: absolute; width: 40px; height: 40px; background: #e2c08d; border-radius: 50%; top: 20px; left: 20px; }
-        #popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 280px; background: white; padding: 20px; text-align: center; border-radius: 12px; border: 3px solid #e2c08d; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 100; }
-        .btn { background: #8b4513; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 15px; font-weight: bold; }
+        body { font-family: Arial, sans-serif; }
+        .coin { color: gold; font-size: 24px; }
+        .gold-style { font-weight: bold; }
     </style>
 </head>
 <body>
-
-<div id="game-container">
-    <div id="ui">收集銀杏葉領禮盒: <span id="score">0</span> / 5</div>
-    <canvas id="gameCanvas"></canvas>
-    <div id="joystick-base"><div id="joystick-stick"></div></div>
-    <div id="popup">
-        <h3 style="color: #8b4513; margin: 0;">任務完成！🎁</h3>
-        <p>代碼: PALMIERGO</p>
-        <a href="#" class="btn" onclick="alert('跳轉中...')">下載 App 換領</a>
-    </div>
-</div>
-
-<script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const scoreEl = document.getElementById('score');
-    const popup = document.getElementById('popup');
-
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize);
-    resize();
-
-    let score = 0;
-    let gameActive = true;
-    const player = { x: canvas.width/2 - 20, y: canvas.height/2 + 100, size: 40, speed: 5, vx: 0, vy: 0 };
-    const target = { x: Math.random() * (canvas.width - 40) + 20, y: Math.random() * (canvas.height - 40) + 20 };
-
-    function drawLogoBackground() {
-        ctx.save();
-        ctx.globalAlpha = 0.3;
-        const s = Math.min(canvas.width, canvas.height) * 0.4;
-        const cx = canvas.width / 2;
-        const cy = canvas.height * 0.35;
-
-        // 綠色圓圈
-        ctx.strokeStyle = "#4d956f";
-        ctx.lineWidth = s * 0.04;
-        ctx.beginPath();
-        ctx.arc(cx, cy, s * 0.6, 0, Math.PI * 2);
-        ctx.stroke();
-
-        function drawGingkoFigure(ox, oy, isGrandpa) {
-            ctx.fillStyle = "#f8d38d";
-            ctx.beginPath();
-            ctx.moveTo(ox, oy);
-            ctx.bezierCurveTo(ox-s*0.2, oy-s*0.3, ox+s*0.2, oy-s*0.3, ox, oy);
-            ctx.arc(ox, oy-s*0.25, s*0.25, 0.8 * Math.PI, 0.2 * Math.PI, true);
-            ctx.fill();
-
-            ctx.fillStyle = "#8b4513";
-            ctx.fillRect(ox - s*0.1, oy - s*0.3, s*0.04, s*0.01);
-            ctx.fillRect(ox + s*0.06, oy - s*0.3, s*0.04, s*0.01);
-            
-            if (isGrandpa) {
-                ctx.beginPath(); ctx.arc(ox, oy - s*0.22, s*0.08, 0.1*Math.PI, 0.9*Math.PI); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(ox-5, oy-s*0.1); ctx.lineTo(ox-15, oy-s*0.15); ctx.lineTo(ox-15, oy-s*0.05); ctx.fill();
-                ctx.beginPath(); ctx.moveTo(ox+5, oy-s*0.1); ctx.lineTo(ox+15, oy-s*0.15); ctx.lineTo(ox+15, oy-s*0.05); ctx.fill();
-            } else {
-                ctx.lineWidth = 2; ctx.strokeStyle = "#8b4513";
-                ctx.beginPath(); ctx.arc(ox, oy - s*0.22, s*0.05, 0, Math.PI); ctx.stroke();
-                ctx.fillStyle = "#f8d38d";
-                ctx.fillRect(ox - s*0.2, oy - s*0.15, s*0.08, s*0.08);
-            }
-        }
-
-        drawGingkoFigure(cx - s*0.2, cy + s*0.2, false);
-        drawGingkoFigure(cx + s*0.2, cy + s*0.2, true);
-
-        ctx.fillStyle = "#e2c08d";
-        ctx.font = `bold ${s * 0.25}px "Microsoft JhengHei"`;
-        ctx.textAlign = "center";
-        ctx.fillText("銀杏士多", cx, cy + s * 0.8);
-        ctx.restore();
-    }
-
-    // 繪製像素蝴蝶酥 (主角)
-    function drawPlayer(x, y) {ctx.save();
-        ctx.translate(x, y);
-        
-        // 繪製葉柄 (Stem)
-        ctx.beginPath();
-        ctx.strokeStyle = "#d49a2a"; // 深黃褐色
-        ctx.lineWidth = 3;
-        ctx.lineCap = "round";
-        ctx.moveTo(20, 28);
-        ctx.quadraticCurveTo(22, 35, 24, 42); 
-        ctx.stroke();
-
-        // 繪製葉片 (Leaf body)
-        ctx.beginPath();
-        ctx.fillStyle = "#ffcc00"; // 明亮的金黃色，與參考圖相近
-        ctx.strokeStyle = "#e6a817"; // 邊緣深黃色
-        ctx.lineWidth = 1.5;
-        ctx.moveTo(20, 28);
-        
-        // 左側弧線向上
-        ctx.bezierCurveTo(-2, 25, -2, 5, 8, 2);
-        // 左上波浪到中間缺口
-        ctx.bezierCurveTo(14, -1, 18, 8, 20, 13);
-        // 中間缺口到右上波浪
-        ctx.bezierCurveTo(22, 8, 26, -1, 32, 2);
-        // 右側弧線向下回到根部
-        ctx.bezierCurveTo(42, 5, 42, 25, 20, 28);
-        
-        ctx.fill();
-        ctx.stroke();
-
-        // 繪製葉脈 (Veins) 增加細節
-        ctx.beginPath();
-        ctx.strokeStyle = "#e6a817";
-        ctx.lineWidth = 1;
-        ctx.moveTo(20, 26); ctx.lineTo(10, 8);
-        ctx.moveTo(20, 26); ctx.lineTo(16, 13);
-        ctx.moveTo(20, 26); ctx.lineTo(24, 13);
-        ctx.moveTo(20, 26); ctx.lineTo(30, 8);
-        ctx.stroke();
-
-        ctx.restore();
-    }
-
-    function drawTarget() {
-        ctx.fillStyle = "#ffd700";
-        ctx.beginPath(); ctx.arc(target.x, target.y, 10, 0, Math.PI*2); ctx.fill();
-    }
-
-    const base = document.getElementById('joystick-base'), stick = document.getElementById('joystick-stick');
-    let stickActive = false;
-    function handleMove(e) {
-        if (!stickActive || !gameActive) return;
-        const rect = base.getBoundingClientRect(), cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
-        let px = e.touches ? e.touches[0].clientX : e.clientX, py = e.touches ? e.touches[0].clientY : e.clientY;
-        let dx = px - cx, dy = py - cy, dist = Math.sqrt(dx*dx + dy*dy), max = 30;
-        if (dist > max) { dx *= max/dist; dy *= max/dist; }
-        stick.style.transform = `translate(${dx}px, ${dy}px)`;
-        player.vx = (dx/max) * player.speed; player.vy = (dy/max) * player.speed;
-    }
-    base.addEventListener('pointerdown', () => stickActive = true);
-    window.addEventListener('pointermove', handleMove);
-    window.addEventListener('pointerup', () => { stickActive = false; stick.style.transform = `translate(0px, 0px)`; player.vx = 0; player.vy = 0; });
-
-    function loop() {if (!gameActive) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawLogoBackground();
-        
-        // 1. 更新葉子的位置
-        player.x += player.vx; 
-        player.y += player.vy;
-        
-        // 👇 2. 邊界限制 👇
-        // 設定葉子的碰撞邊界大小 (依據我們新畫的銀杏葉大小微調為 45)
-        const leafBoundary = 45; 
-        
-        // 限制 X 軸不能跑出畫面左右
-        player.x = Math.max(0, Math.min(canvas.width - leafBoundary, player.x));
-        // 限制 Y 軸不能跑出畫面上下
-        player.y = Math.max(0, Math.min(canvas.height - leafBoundary, player.y));
-        // 👆 邊界限制結束 👆
-
-        // 3. 碰撞偵測 (保持不變)
-        if (Math.hypot(player.x + 20 - target.x, player.y + 20 - target.y) < 30) {
-            score++; scoreEl.innerText = score;
-            target.x = Math.random() * (canvas.width - 60) + 30; 
-            target.y = Math.random() * (canvas.height - 60) + 30;
-            if (score >= 5) { gameActive = false; popup.style.display = 'block'; }
-        }
-        
-        // 4. 繪製
-        drawTarget(); 
-        drawPlayer(player.x, player.y);
-        requestAnimationFrame(loop);
-    }
-    loop();
-</script>
+    <h1>Online Viewer</h1>
+    <p>Welcome to the online viewer!</p>
+    <p>Your coins: <span class="coin">$100</span></p>
+    <p class="gold-style">Gold Member</p>
+    <a href="https://apps.apple.com/hk/app/%E9%8A%80%E6%9D%8F%E9%A4%A8/id1487910701">Download on the App Store</a>
 </body>
 </html>
