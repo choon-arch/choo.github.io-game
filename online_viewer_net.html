@@ -3,18 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Viewer</title>
+    <title>Ginkgo Leaf Collection Game</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .coin { color: gold; font-size: 24px; }
-        .gold-style { font-weight: bold; }
+        canvas {
+            border: 1px solid black;
+        }
+        #completionPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
     </style>
 </head>
 <body>
-    <h1>Online Viewer</h1>
-    <p>Welcome to the online viewer!</p>
-    <p>Your coins: <span class="coin">$100</span></p>
-    <p class="gold-style">Gold Member</p>
-    <a href="https://apps.apple.com/hk/app/%E9%8A%80%E6%9D%8F%E9%A4%A8/id1487910701">Download on the App Store</a>
+    <h1>Ginkgo Leaf Collection Game</h1>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="completionPopup">
+        <h2>Congratulations!</h2>
+        <p>You collected all the leaves!</p>
+        <a href="https://apps.apple.com">Download on the App Store</a>
+    </div>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let leaves = [];
+        let coins = [];
+        let score = 0;
+        let collectedLeaves = 0;
+        const numLeaves = 5;
+        const joystick = { x: canvas.width / 2, y: canvas.height / 2, radius: 30 };  // joystick position
+
+        function init() {
+            // Initialize leaves and coins
+            for (let i = 0; i < numLeaves; i++) {
+                leaves.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height });
+                coins.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height });
+            }
+            draw();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawLeaves();
+            drawCoins();
+            drawJoystick();
+        }
+
+        function drawLeaves() {
+            ctx.fillStyle = 'green';
+            leaves.forEach(leaf => {
+                ctx.beginPath();
+                ctx.arc(leaf.x, leaf.y, 10, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawCoins() {
+            ctx.fillStyle = 'gold';
+            coins.forEach(coin => {
+                ctx.fillText('$', coin.x, coin.y);
+            });
+        }
+
+        function drawJoystick() {
+            ctx.beginPath();
+            ctx.arc(joystick.x, joystick.y, joystick.radius, 0, Math.PI * 2);
+            ctx.fillStyle = 'gray';
+            ctx.fill();
+        }
+
+        function collectLeaf(x, y) {
+            leaves = leaves.filter(leaf => {
+                const isCollected = Math.hypot(leaf.x - x, leaf.y - y) < 10;
+                if (isCollected) collectedLeaves++;
+                return !isCollected;
+            });
+            if (collectedLeaves === numLeaves) {
+                showCompletionPopup();
+            }
+        }
+
+        function showCompletionPopup() {
+            document.getElementById('completionPopup').style.display = 'block';
+        }
+
+        // Add event listeners for joystick controls
+        canvas.addEventListener('mousemove', (event) => {
+            joystick.x = event.clientX - canvas.getBoundingClientRect().left;
+            joystick.y = event.clientY - canvas.getBoundingClientRect().top;
+            collectLeaf(joystick.x, joystick.y);
+            draw();
+        });
+
+        init();
+    </script>
 </body>
 </html>
